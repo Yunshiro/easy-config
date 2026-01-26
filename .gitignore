@@ -1,0 +1,7 @@
+### h2 db file ###
+data/
+*.db
+*.trace.db
+
+### VS Code ###
+.vscode/

@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: easy-config-server
+
+  # H2 数据库配置
+  datasource:
+    # url: jdbc:h2:mem:easyconfig
+    url: jdbc:h2:file:./data/easy-config
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # H2 Console 配置 (浏览器访问)
+  h2:
+    console:
+      enabled: true           # 启用H2 Console
+      path: /h2-console       # 访问路径: http://localhost:8080/h2-console
+      settings:
+        web-allow-others: true # 允许远程访问
+
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: update       # 自动更新表结构 (开发环境使用update，生产环境使用validate或none)
+    show-sql: true           # 显示SQL语句
+      
+
+  # 初始化SQL脚本
+  # sql:
+  #   init:
+  #     mode: always          # 始终执行初始化脚本
+  #     schema-locations: classpath:db/schema.sql
+
+# 服务端口
+server:
+  port: 8080
