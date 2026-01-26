@@ -84,9 +84,9 @@ config (1) ──────── (∞) config_change_log
 | 字段名 | 类型 | 长度 | 约束 | 说明 |
 |--------|------|------|------|------|
 | id | BIGINT | - | PRIMARY KEY, AUTO_INCREMENT | 主键 |
-| environment_id | BIGINT | - | NOT NULL, FOREIGN KEY | 环境ID，关联 environment 表 |
-| key | VARCHAR | 200 | NOT NULL | 配置键 |
-| value | CLOB | - | NULL | 配置值（大文本，支持复杂配置） |
+ | environment_id | BIGINT | - | NOT NULL, FOREIGN KEY | 环境ID，关联 environment 表 |
+ | config_key | VARCHAR | 200 | NOT NULL | 配置键 |
+ | config_value | CLOB | - | NULL | 配置值（大文本，支持复杂配置） |
 | value_type | VARCHAR | 20 | DEFAULT 'STRING' | 值类型（STRING/NUMBER/BOOLEAN/JSON） |
 | description | VARCHAR | 500 | NULL | 配置描述 |
 | group_name | VARCHAR | 100 | NULL | 配置分组（用于组织相关配置） |
@@ -97,7 +97,7 @@ config (1) ──────── (∞) config_change_log
 | updated_at | TIMESTAMP | - | DEFAULT CURRENT_TIMESTAMP | 更新时间 |
 
 **索引**：
-- `idx_config_env_key`：联合唯一索引（environment_id + key）
+- `idx_config_env_key`：联合唯一索引（environment_id + config_key）
 - `idx_config_group`：普通索引（group_name）
 - `idx_config_enabled`：普通索引（enabled）
 
@@ -105,8 +105,8 @@ config (1) ──────── (∞) config_change_log
 - `fk_config_environment`：environment_id → environment(id)，级联删除
 
 **设计考虑**：
-- `environment_id + key` 联合唯一约束，确保同一环境内配置键不重复
-- `value` 使用 CLOB 类型，支持存储复杂配置（如JSON、长文本）
+- `environment_id + config_key` 联合唯一约束，确保同一环境内配置键不重复
+- `config_value` 使用 CLOB 类型，支持存储复杂配置（如JSON、长文本）
 - `value_type` 支持类型感知，便于前端校验和展示
 - `encrypted` 标识敏感配置，支持加密存储（如密码、密钥）
 - `enabled` 支持软删除，保留历史记录
@@ -121,10 +121,10 @@ config (1) ──────── (∞) config_change_log
 | 字段名 | 类型 | 长度 | 约束 | 说明 |
 |--------|------|------|------|------|
 | id | BIGINT | - | PRIMARY KEY, AUTO_INCREMENT | 主键 |
-| config_id | BIGINT | - | NOT NULL, FOREIGN KEY | 配置ID，关联 config 表 |
-| version | BIGINT | - | NOT NULL | 版本号（递增） |
-| key | VARCHAR | 200 | NOT NULL | 配置键快照（冗余字段，提升查询性能） |
-| value | CLOB | - | NULL | 配置值快照 |
+ | config_id | BIGINT | - | NOT NULL, FOREIGN KEY | 配置ID，关联 config 表 |
+ | version | BIGINT | - | NOT NULL | 版本号（递增） |
+ | config_key | VARCHAR | 200 | NOT NULL | 配置键快照（冗余字段，提升查询性能） |
+ | config_value | CLOB | - | NULL | 配置值快照 |
 | operation | VARCHAR | 20 | NOT NULL | 操作类型（CREATE/UPDATE/DELETE） |
 | operator | VARCHAR | 50 | NULL | 操作人标识 |
 | change_reason | VARCHAR | 500 | NULL | 变更原因 |
@@ -139,7 +139,7 @@ config (1) ──────── (∞) config_change_log
 
 **设计考虑**：
 - `version` 字段递增，便于排序和回滚
-- `key` 冗余字段避免频繁关联查询 config 表，提升性能
+- `config_key` 冗余字段避免频繁关联查询 config 表，提升性能
 - `operation` 记录操作类型，支持完整的变更追踪
 - `change_reason` 记录变更原因，便于审计和追溯
 - 保留历史版本，支持任意版本回滚
@@ -153,10 +153,10 @@ config (1) ──────── (∞) config_change_log
 | 字段名 | 类型 | 长度 | 约束 | 说明 |
 |--------|------|------|------|------|
 | id | BIGINT | - | PRIMARY KEY, AUTO_INCREMENT | 主键 |
-| config_id | BIGINT | - | NOT NULL, FOREIGN KEY | 配置ID，关联 config 表 |
-| operation | VARCHAR | 20 | NOT NULL | 操作类型（CREATE/UPDATE/DELETE） |
-| old_value | CLOB | - | NULL | 变更前值 |
-| new_value | CLOB | - | NULL | 变更后值 |
+ | config_id | BIGINT | - | NOT NULL, FOREIGN KEY | 配置ID，关联 config 表 |
+ | operation | VARCHAR | 20 | NOT NULL | 操作类型（CREATE/UPDATE/DELETE） |
+ | old_config_value | CLOB | - | NULL | 变更前值 |
+ | new_config_value | CLOB | - | NULL | 变更后值 |
 | operator | VARCHAR | 50 | NULL | 操作人标识 |
 | ip_address | VARCHAR | 45 | NULL | 操作来源IP（支持IPv6） |
 | user_agent | VARCHAR | 500 | NULL | 操作来源User-Agent |
@@ -172,7 +172,7 @@ config (1) ──────── (∞) config_change_log
 - `fk_log_config`：config_id → config(id)，级联删除
 
 **设计考虑**：
-- `old_value` 和 `new_value` 记录变更前后值，便于对比和审计
+- `old_config_value` 和 `new_config_value` 记录变更前后值，便于对比和审计
 - `ip_address` 和 `user_agent` 记录操作来源，增强安全性
 - 独立于 config_version 表，提供更详细的操作日志
 - 支持按时间、操作类型、配置项等多维度查询
@@ -216,7 +216,7 @@ config (1) ──────── (∞) config_change_log
 
 ## 四、设计决策与理由
 
-### 4.1 为什么选择 CLOB 存储 config.value？
+### 4.1 为什么选择 CLOB 存储 config.config_value？
 
 **决策**：使用 CLOB（大文本）类型存储配置值。
 
@@ -288,7 +288,7 @@ config (1) ──────── (∞) config_change_log
 | 表名 | 索引名 | 字段 | 类型 | 说明 |
 |------|--------|------|------|------|
 | environment | idx_env_name | name | 唯一索引 | 快速查询环境 |
-| config | idx_config_env_key | environment_id + key | 唯一索引 | 快速查询配置 |
+| config | idx_config_env_key | environment_id + config_key | 唯一索引 | 快速查询配置 |
 | config | idx_config_group | group_name | 普通索引 | 按组查询配置 |
 | config | idx_config_enabled | enabled | 普通索引 | 查询有效配置 |
 | config_version | idx_version_config | config_id | 普通索引 | 查询配置版本 |
@@ -302,7 +302,7 @@ config (1) ──────── (∞) config_change_log
 
 ### 5.2 查询优化建议
 
-1. **配置查询**：优先使用 `environment_id + key` 唯一索引，避免全表扫描
+1. **配置查询**：优先使用 `environment_id + config_key` 唯一索引，避免全表扫描
 2. **版本查询**：按 `config_id` 查询时使用索引，按时间排序时利用 `created_at` 索引
 3. **日志查询**：按时间范围查询时利用 `created_at` 索引，避免范围扫描
 4. **分组查询**：利用 `group_name` 索引，支持按组快速查询配置
@@ -327,7 +327,7 @@ config (1) ──────── (∞) config_change_log
 #### 6.1.2 配置权限管理
 
 - **扩展方案**：新增 `config_permission` 表，支持用户/角色级别的配置访问控制
-- **字段设计**：config_id, user/role_id, permission_type（READ/WRITE）
+- **字段设计**：config_id, user_role_id, permission_type（READ/WRITE）
 
 #### 6.1.3 配置模板管理
 
@@ -374,8 +374,8 @@ CREATE TABLE environment (
 CREATE TABLE config (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     environment_id BIGINT NOT NULL,
-    key VARCHAR(200) NOT NULL,
-    value CLOB,
+    config_key VARCHAR(200) NOT NULL,
+    config_value CLOB,
     value_type VARCHAR(20) DEFAULT 'STRING',
     description VARCHAR(500),
     group_name VARCHAR(100),
@@ -385,7 +385,7 @@ CREATE TABLE config (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_config_environment FOREIGN KEY (environment_id) REFERENCES environment(id) ON DELETE CASCADE,
-    CONSTRAINT uk_config_env_key UNIQUE (environment_id, key)
+    CONSTRAINT uk_config_env_key UNIQUE (environment_id, config_key)
 );
 
 -- 配置版本表
@@ -393,8 +393,8 @@ CREATE TABLE config_version (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     config_id BIGINT NOT NULL,
     version BIGINT NOT NULL,
-    key VARCHAR(200) NOT NULL,
-    value CLOB,
+    config_key VARCHAR(200) NOT NULL,
+    config_value CLOB,
     operation VARCHAR(20) NOT NULL,
     operator VARCHAR(50),
     change_reason VARCHAR(500),
@@ -407,8 +407,8 @@ CREATE TABLE config_change_log (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     config_id BIGINT NOT NULL,
     operation VARCHAR(20) NOT NULL,
-    old_value CLOB,
-    new_value CLOB,
+    old_config_value CLOB,
+    new_config_value CLOB,
     operator VARCHAR(50),
     ip_address VARCHAR(45),
     user_agent VARCHAR(500),
@@ -451,10 +451,10 @@ CREATE INDEX idx_import_created ON import_export_log(created_at);
 
 ```sql
 -- 初始化默认环境
-INSERT INTO environment (name, description, sort_order) VALUES
-('dev', '开发环境', 1),
-('test', '测试环境', 2),
-('prod', '生产环境', 3);
+INSERT INTO environment (name, description, sort_order, created_at, updated_at) VALUES
+('dev', '开发环境', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('test', '测试环境', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('prod', '生产环境', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 ```
 
 ---

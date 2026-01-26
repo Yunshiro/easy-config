@@ -1,5 +1,10 @@
 # easy-config
 
+## 文档
+
+- [数据库设计文档](docs/database-schema.md)
+- [项目结构文档](docs/PROJECT_STRUCTURE.md)
+- [需求文档](docs/REQUIREMENTS.md)
 ## 技术栈
 Java
 Spring Boot
