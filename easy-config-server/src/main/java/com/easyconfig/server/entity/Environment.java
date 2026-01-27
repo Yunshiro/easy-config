@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -27,6 +28,7 @@ public class Environment {
     private Long id;
 
     @Column(name = "name", nullable = false, length = 50)
+    @NonNull
     private String name;
 
     @Column(name = "description", length = 200)
