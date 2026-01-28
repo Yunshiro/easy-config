@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,17 +80,6 @@ class EnvironmentRepositoryTest {
         assertThat(result).isNotPresent();
     }
 
-    // @Test
-    // void testFindById_Success() {
-    //     // 执行
-    //     Optional<Environment> result = environmentRepository.findById(env1.getId());
-
-    //     // 验证
-    //     assertThat(result).isPresent();
-    //     assertThat(result.get().getId()).isEqualTo(env1.getId());
-    //     assertThat(result.get().getName()).isEqualTo("dev");
-    // }
-
     @Test
     void testFindById_NotFound() {
         // 执行
@@ -109,5 +99,40 @@ class EnvironmentRepositoryTest {
         assertThat(result)
                 .extracting("name")
                 .containsExactlyInAnyOrder("test1", "dev1");
+    }
+
+    @Test
+    void testFindAllByOrderBySortOrderAsc_Success() {
+        List<Environment> result = environmentRepository.findAllByOrderBySortOrderAsc();
+        assertThat(result).hasSize(3);
+        assertThat(result)
+                .extracting("sortOrder")
+                .containsExactly(1, 2, 3);
+    }
+
+    @Test
+    void testFindByNameContainingOrDescriptionContaining_KeywordMatch() {
+        List<Environment> result = environmentRepository.findByNameContainingOrDescriptionContaining("dev", "生产");
+        assertThat(result)
+                .extracting("name")
+                .containsExactlyInAnyOrder("dev1", "prod1");
+    }
+
+    @Test
+    void testFindByCreatedAtBetween_Success() {
+        LocalDateTime starTime = LocalDateTime.now().minusHours(1);
+        LocalDateTime endTime = LocalDateTime.now().plusHours(1);
+        List <Environment> result = environmentRepository.findByCreatedAtBetween(starTime, endTime);
+
+        assertThat(result).hasSize(3);
+    }
+
+    @Test
+    void testFindByUpdatedAtBetween_Success() {
+        LocalDateTime starTime = LocalDateTime.now().minusHours(1);
+        LocalDateTime endTime = LocalDateTime.now().plusHours(1);
+        List <Environment> result = environmentRepository.findByUpdatedAtBetween(starTime, endTime);
+
+        assertThat(result).hasSize(3);
     }
 }
