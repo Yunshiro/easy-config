@@ -15,37 +15,37 @@ Spring Boot
 
 ## 阶段性工作
 第一阶段：服务端基础（Week 1）
-1. 数据库 + 实体层
-- 添加H2数据库依赖
-- 创建 Environment 和 Config 实体
-- 创建 Repository 接口
-- 编写 schema.sql 初始化脚本
+1. 数据库 + 实体层 
+- [x] 添加H2数据库依赖
+- [x] 创建 Environment 和 Config 实体
+- [x] 创建 Repository 接口
+- [x] 编写 schema.sql 初始化脚本
 2. REST API
-- 添加 Web、JPA、WebSocket 依赖
-- 创建 Controller（ConfigController、EnvironmentController）
-- 创建 Service 层
-- 实现增删改查接口
+- [ ] 添加 Web、JPA、WebSocket 依赖
+- [ ] 创建 Controller（ConfigController、EnvironmentController）
+- [ ] 创建 Service 层
+- [ ] 实现增删改查接口
 3. 配置热更新基础
-- 配置 WebSocket
-- 实现 PushService（配置变化推送）
+- [ ] 配置 WebSocket
+- [ ] 实现 PushService（配置变化推送）
 ---
 第二阶段：SDK开发（Week 2）
 4. SDK客户端
-- 创建 HTTP 客户端（ConfigClient）
-- 创建 WebSocket 客户端（WebSocketClient）
-- 实现配置拉取逻辑
+- [ ] 创建 HTTP 客户端（ConfigClient）
+- [ ] 创建 WebSocket 客户端（WebSocketClient）
+- [ ] 实现配置拉取逻辑
 5. Spring Boot集成
-- 创建自动配置类
-- 实现配置刷新机制（@RefreshScope 或自定义）
-- 添加注解（@EasyConfig、@EasyConfigListener）
+- [ ] 创建自动配置类
+- [ ] 实现配置刷新机制（@RefreshScope 或自定义）
+- [ ] 添加注解（@EasyConfig、@EasyConfigListener）
 ---
 第三阶段：Web前端（Week 3）
 6. Vue3管理界面
-- 创建配置列表页面（ConfigList.vue）
-- 创建配置编辑页面（ConfigEdit.vue）
-- 创建环境管理页面（EnvironmentManage.vue）
-- 实现 API 调用封装（api/config.js、api/environment.js）
+- [ ] 创建配置列表页面（ConfigList.vue）
+- [ ] 创建配置编辑页面（ConfigEdit.vue）
+- [ ] 创建环境管理页面（EnvironmentManage.vue）
+- [ ] 实现 API 调用封装（api/config.js、api/environment.js）
 7. WebSocket集成
-- 前端监听配置变化推送
-- 实时更新UI
+- [ ] 前端监听配置变化推送
+- [ ] 实时更新UI
 ---
