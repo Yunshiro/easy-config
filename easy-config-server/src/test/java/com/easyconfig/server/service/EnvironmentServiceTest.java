@@ -142,7 +142,7 @@ class EnvironmentServiceTest {
                 .sortOrder(5)
                 .build();
 
-        when(environmentRepository.findById(1L)).thenReturn(Optional.of(devEnv));
+        lenient().when(environmentRepository.findById(1L)).thenReturn(Optional.of(devEnv));
         when(environmentRepository.findByName("dev-updated")).thenReturn(Optional.empty());
         when(environmentRepository.save(any(Environment.class))).thenReturn(updateEnv);
 
